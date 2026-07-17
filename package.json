@@ -1,0 +1,13 @@
+{
+  "devDependencies": {
+    "@types/react": "^18.3.1",
+    "@types/react-dom": "^18.3.1"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.44.3",
+    "hono": "^4",
+    "openai": "^4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  }
+}
