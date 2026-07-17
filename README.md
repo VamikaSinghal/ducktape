@@ -2,7 +2,11 @@
 
 ### The AI coding assistant that never forgets.
 
-DuckTape is a voice-first AI coding buddy with **persistent memory**. Most AI assistants start from zero every conversation — you re-explain your stack, your bugs, your preferences, every single time. DuckTape remembers. Tell it about your project once; it carries that context across every conversation, on the web *and* in your terminal.
+I'm a CS student at Berkeley, and like a lot of my generation, I learned to code by vibing — prompting an AI until something works, without always understanding why. It's fast, and it feels like magic, right up until it crashes. Then I'm stuck, because I never actually learned the thing that broke.
+
+DuckTape is my attempt to fix that. It's an AI coding buddy that talks to you like a real rubber duck — the old programmer's trick of explaining your problem out loud until the answer clicks. Except this duck talks back, and it *remembers*. It knows what you're building, what broke last time, and how you like to work — so every conversation builds on the last one instead of starting from zero.
+
+The goal isn't just to spit out fixes. It's to bring back the part of coding that vibing has quietly erased — the understanding, the back-and-forth, the "oh, THAT'S why it broke" moment. We grew up not really knowing what the duck was for. I want to give it meaning again.
 
 Built for the **Sauna × ElevenLabs** hackathon.
 
@@ -10,13 +14,15 @@ Built for the **Sauna × ElevenLabs** hackathon.
 
 ---
 
-## What it does
+## What DuckTape does
 
-- 🎙️ **Voice in, voice out** — talk to it, it talks back (ElevenLabs speech-to-text + text-to-speech).
-- 🧠 **Persistent memory** — it extracts and stores your project, stack, bugs, and preferences, and injects them into every reply.
-- 👉 **Point & explain** — summon a cursor-following duck on the web app, point at any code or message, and it explains it out loud.
-- 💻 **Terminal CLI** — the same brain and memory, in your shell. Pipe an error straight to the duck.
-- 🦆 A walking-duck mascot, because obviously.
+- 🎙️ **Talks with you, out loud** — speak to it, it speaks back (voice in, voice out).
+- 🧠 **Never forgets** — remembers your project, stack, bugs, and fixes across every conversation.
+- 📋 **Shows its memory** — a live panel of everything it knows about you.
+- 👉 **Point & explain** — point at any code on the page, it explains it out loud.
+- 💻 **Lives in your terminal** — a CLI with the same brain and memory as the web app.
+- 🔗 **One brain, everywhere** — web, voice, and terminal all share a single memory.
+- 🎓 **Teaches, doesn't just fix** — closes the understanding gap vibe-coding leaves behind.
 
 ## The "wow" moment
 
