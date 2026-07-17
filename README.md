@@ -1,44 +1,107 @@
 # DuckTape 🦆
 
-**The AI rubber duck that never forgets.**
+### The AI coding assistant that never forgets.
 
-A voice-first AI coding assistant. Talk to it like you'd talk to a rubber duck, except this one talks back, remembers what you told it last week, and can point at things on the page to explain them.
+DuckTape is a voice-first AI coding buddy with **persistent memory**. Most AI assistants start from zero every conversation — you re-explain your stack, your bugs, your preferences, every single time. DuckTape remembers. Tell it about your project once; it carries that context across every conversation, on the web *and* in your terminal.
 
-## What's inside
+Built for the **Sauna × ElevenLabs** hackathon.
 
-- **Voice in, voice out** — speech-to-text and text-to-speech via [ElevenLabs](https://elevenlabs.io).
-- **Real coding conversation** — powered by an LLM.
-- **Persistent memory** — an app-owned SQLite store that remembers your projects, preferences, bugs, and tasks across sessions, and re-reads them into every reply.
-- **Cursor buddy** — a floating duck that eases along next to your cursor and explains whatever you point at.
-- **A quack** — because of course.
-
-## How it's built
-
-It's a [Sauna App](https://sauna.ai): a single deployed handler with its own URL, database, and static frontend.
-
-- `src/handler.ts` — the HTTP handler (chat, memory, and CLI endpoints).
-- `src/client.tsx` — the voice-first chat UI.
-- `src/schema.ts` / `src/db.ts` — the Drizzle schema and client for the memory store.
-- `migrations/` — the SQLite migrations applied on boot.
-- `public/` — the frontend assets, the duck mascot clip, and the quack.
-- `cli/` — a small CLI installer.
-- `app.md` — the app manifest + longer technical notes.
-
-## Endpoints
-
-| Method | Path | What it does |
-|---|---|---|
-| `GET` | `/` | the voice-first chat UI |
-| `GET` | `/api/memories` | all stored memories, newest first |
-| `GET` | `/api/conversations` | recent conversation turns (last 30) |
-| `POST` | `/api/chat` | send `{ message }` (JSON) or `multipart/form-data` with an `audio` field; returns `{ text, audio }` (base64 MP3) |
-| `POST` | `/api/memories` | add a memory `{ type, key, value }` |
-| `DELETE` | `/api/memories/:id` | remove a memory |
-
-## Memory model
-
-Memories live in a `memories` table with a `type` (`project` \| `preferences` \| `bug` \| `task`), a stable `key`, and a `value`. They're read into the prompt on every turn and re-extracted after each reply, so DuckTape gets to know you the more you use it.
+> Tell the web duck about a bug today, and your terminal duck knows about it tomorrow. One brain, one memory, everywhere.
 
 ---
 
-*Built on [Sauna](https://sauna.ai).*
+## What it does
+
+- 🎙️ **Voice in, voice out** — talk to it, it talks back (ElevenLabs speech-to-text + text-to-speech).
+- 🧠 **Persistent memory** — it extracts and stores your project, stack, bugs, and preferences, and injects them into every reply.
+- 👉 **Point & explain** — summon a cursor-following duck on the web app, point at any code or message, and it explains it out loud.
+- 💻 **Terminal CLI** — the same brain and memory, in your shell. Pipe an error straight to the duck.
+- 🦆 A walking-duck mascot, because obviously.
+
+## The "wow" moment
+
+**Conversation 1:** *"I'm building Doppl with Next.js and Supabase. I finally fixed my auth redirect loop — it was my middleware matcher."*
+
+**Conversation 2 (fresh session):** *"My login broke again."*
+→ *"Ugh, again? Last time it was that middleware matcher causing the redirect loop on Doppl's auth flow — same symptom, or something new?"*
+
+No re-explaining. That's the whole point.
+
+---
+
+## Architecture
+
+```
+You (voice / text / terminal)
+        ↓
+ElevenLabs STT ──► DuckTape backend ──► retrieve memories
+                        ↓                     ↓
+                   inject into prompt ──► LLM ──► reply
+                        ↓                     ↓
+                 extract new memories    ElevenLabs TTS
+                        ↓                     ↓
+                   store in SQLite       voice response
+```
+
+- **Frontend:** React + Tailwind (light white & yellow theme), single-page.
+- **Backend:** [Hono](https://hono.dev/) on Sauna Apps (Cloudflare Durable Object facet).
+- **Database:** app-owned SQLite via Drizzle ORM — `memories`, `conversations`, `config`.
+- **Voice:** ElevenLabs (Scribe STT + Flash v2.5 TTS) via the Sauna proxy.
+- **LLM:** Sauna's metered LLM endpoint (`balanced` for chat/explain, `fast` for memory extraction).
+
+## Project layout
+
+```
+app.md              # Sauna app manifest + README
+package.json        # deps (hono, drizzle-orm, react, openai)
+src/
+  handler.ts        # Hono backend: /api/chat, /api/explain, /cli/*, memory pipeline
+  client.tsx        # React UI: chat, memory panel, cursor buddy, point-mode
+  schema.ts         # Drizzle schema (memories, conversations, config)
+  db.ts             # sqlite-proxy adapter
+  cli-assets.ts     # base64 of the CLI + installer (served from /cli/*)
+public/             # index.html + duck mascot (mp4/webm), quack.mp3, favicon
+migrations/         # Drizzle migrations (applied at boot)
+cli/
+  ducktape.mjs      # the terminal CLI (zero deps, Node 18+)
+  install.sh        # one-line installer
+```
+
+## Endpoints
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/` | The voice-first chat UI |
+| `GET` | `/api/memories` | All stored memories |
+| `GET` | `/api/conversations` | Recent conversation turns |
+| `POST` | `/api/chat` | Chat (JSON `{message}` or multipart `audio`) → `{text, audio}` |
+| `POST` | `/api/explain` | Point-and-explain (used by the cursor buddy) |
+| `GET` | `/cli/install.sh` | The CLI installer (anonymous) |
+| `GET` | `/cli/ducktape.mjs` | The CLI source (anonymous) |
+| `POST` | `/cli/chat` · `/cli/explain` | CLI endpoints (token-gated via `X-DuckTape-Token`) |
+| `GET` | `/admin/cli-token` | Owner-only: fetch your CLI token |
+
+## The terminal CLI
+
+```bash
+# install
+curl -fsSL https://<your-app>.sauna.new/cli/install.sh | bash
+
+# log in (token from /admin/cli-token)
+ducktape login <token>
+
+# use it
+ducktape ask "why is my login redirect looping"
+ducktape explain src/middleware.ts
+npm run build 2>&1 | ducktape          # pipe an error → explanation
+```
+
+The CLI is a thin client — it calls the deployed app, which owns the brain and the memory. So it shares context with the web app: same project, same bugs, same you.
+
+## Running it
+
+This is a [Sauna App](https://sauna.new). Drop the folder in at `apps/ducktape/` and deploy through Sauna — migrations apply on boot, and voice + LLM are metered through Sauna's proxy (no API keys to manage).
+
+---
+
+Made with 🦆 for the Sauna × ElevenLabs hackathon.
